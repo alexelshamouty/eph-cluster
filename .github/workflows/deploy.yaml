@@ -54,15 +54,15 @@ jobs:
         run: |
           curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 
-      - name: install nginx controller
+      - name: Install NGINX Controller
         run: |
           helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
           helm repo update
 
           helm install nginx-ingress ingress-nginx/ingress-nginx \
-          --namespace tech-control \ 
-          --set controller.service.type=LoadBalancer \
-          --set controller.watchNamespace=tech-app
+            --namespace tech-control --create-namespace \
+            --set controller.service.type=LoadBalancer \
+            --set controller.watchNamespace=tech-app
       
       - name: Create CloudFlare Secret
         run: |
