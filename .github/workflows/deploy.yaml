@@ -46,15 +46,34 @@ jobs:
       - name: Configure Kubeconfig
         run: aws eks update-kubeconfig --name ephemral-cluster --region ${{ secrets.AWS_REGION }}
       
-      - name: deploy tenant
+      - name: Tag the nodes
         run: |
-          kubectl apply -f tech-tenant.yaml 
+          bash ./tag-nodes.sh
 
+
+  setup-tenants:
+    needs: kubernetes-infra
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_ACCESS_SECRET }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Configure Kubeconfig
+        run: aws eks update-kubeconfig --name ephemral-cluster --region ${{ secrets.AWS_REGION }}
+      
       - name: install helm
         run: |
           curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 
-      - name: Install NGINX Controller
+    # Setup tech tenant
+      - name: Install NGINX Controller Tech tenant
         run: |
           helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
           helm repo update
@@ -64,7 +83,8 @@ jobs:
               --namespace tech-control --create-namespace \
               --set controller.service.type=LoadBalancer \
               --set controller.watchNamespace=tech-app
-          fi      
+          fi
+
       - name: Create CloudFlare Secret
         run: |
           if ! kubectl get secret cloudflare-api-token -n tech-control | grep cloudflare-api-token; then
@@ -72,10 +92,46 @@ jobs:
               --from-literal=api-token=${{ secrets.CLOUD_FLARE_SECRET }} \
               --namespace tech-control
           fi
-      - name: Deploy external dns
-        run: 
-          kubectl apply -f external-dns.yaml
-
-      - name: deploy application
+      - name: Deploy tech tenant
         run: |
-          kubectl apply -f tech-tenant-app.yaml 
+          kubectl apply -f tech-tenant/tech-tenant.yaml
+          kubectl apply -f tech-tenant/external-dns.yaml
+          kubectl apply -f tech-tenant/tech-tenant-app.yaml
+
+    # # Setup blue tenant
+    #   - name: Install NGINX Controller Blue
+    #     run: |
+    #       helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+    #       helm repo update
+
+    #       if ! helm list -n tech-control | grep -q "ingress-nginx"; then
+    #         helm install nginx-ingress ingress-nginx/ingress-nginx \
+    #           --namespace blue-control --create-namespace \
+    #           --set controller.service.type=LoadBalancer \
+    #           --set controller.watchNamespace=blue-app
+    #       fi
+
+    #   - name: Deploy blue tenant
+    #     run: |
+    #       kubectl apply -f blue-tenant/blue-tenant.yaml
+    #       kubectl apply -f blue-tenant/external-dns.yaml
+    #       kubectl apply -f blue-tenant/tech-tenant-app.yaml
+      
+    # # Setup red tenant
+    #   - name: Install NGINX Controller Red
+    #     run: |
+    #       helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+    #       helm repo update
+
+    #       if ! helm list -n tech-control | grep -q "ingress-nginx"; then
+    #         helm install nginx-ingress ingress-nginx/ingress-nginx \
+    #           --namespace red-control --create-namespace \
+    #           --set controller.service.type=LoadBalancer \
+    #           --set controller.watchNamespace=red-app
+    #       fi
+
+    #   - name: Deploy blue tenant
+    #     run: |
+    #       kubectl apply -f red-tenant/red-tenant.yaml
+    #       kubectl apply -f red-tenant/external-dns.yaml
+    #       kubectl apply -f red-tenant/red-tenant-app.yaml
