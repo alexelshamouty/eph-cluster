@@ -67,10 +67,11 @@ jobs:
           fi      
       - name: Create CloudFlare Secret
         run: |
-          kubectl create secret generic cloudflare-api-token \
-          --from-literal=api-token=${{ secrets.CLOUD_FLARE_SECRET }} \
-          --namespace tech-control
-
+          if ! kubectl get secret cloudflare-api-token -n tech-control | grep cloudflare-api-token; then
+              kubectl create secret generic cloudflare-api-token \
+              --from-literal=api-token=${{ secrets.CLOUD_FLARE_SECRET }} \
+              --namespace tech-control
+          fi
       - name: Deploy external dns
         run: 
           kubectl apply -f external-dns.yaml
