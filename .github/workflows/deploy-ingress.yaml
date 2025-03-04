@@ -1,0 +1,48 @@
+name: Deploy Ingress
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  kubernetes-infra:
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_ACCESS_SECRET }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Configure Kubeconfig
+        run: aws eks update-kubeconfig --name ephemral-cluster --region ${{ secrets.AWS_REGION }}
+      
+      - name: deploy tenant
+        run: |
+          kubectl apply -f tech-tenant.yaml 
+
+      - name: install helm
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+
+      - name: install nginx controller
+        run: |
+          helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+          helm repo update
+          helm install nginx-ingress ingress-nginx/ingress-nginx --namespace tech-control \ 
+          --set controller.service.type=LoadBalancer \
+          -- set controller.watchNamespace=tech-app
+      
+      - name: Create CloudFlare Secret
+        run: |
+          kubectl create secret generic cloudflare-api-token \
+          --from-literal=api-token=${{ secrets.CLOUD_FLARE_SECRET }} \
+          --namespace tech-control
+
+      - name: Deploy external dns
+        run: 
+          kubnecl apply -f external-dns.yaml

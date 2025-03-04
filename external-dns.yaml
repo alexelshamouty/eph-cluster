@@ -1,9 +1,39 @@
+#Define a service account
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: external-dns
   namespace: tech-control
+---
+#RBAC rules for the service account
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: external-dns
+rules:
+- apiGroups: [""]
+  resources: ["services", "endpoints", "pods"]
+  verbs: ["get", "watch", "list"]
+- apiGroups: ["networking.k8s.io"]
+  resources: ["ingresses"]
+  verbs: ["get", "watch", "list"]
+# Role binding: Bind the new RBAC to the service account
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: external-dns
+  namespace: tech-app  # This must be the namespace where ExternalDNS watches
+subjects:
+- kind: ServiceAccount
+  name: external-dns
+  namespace: tech-control  # ExternalDNS runs here
+roleRef:
+  kind: ClusterRole
+  name: external-dns
+  apiGroup: rbac.authorization.k8s.io
+# Deploy external dns with proxy enabled as we don't want to enable SSL certificates on the cluster. We are already using cloud flare.
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -23,7 +53,7 @@ spec:
       serviceAccountName: external-dns
       containers:
       - name: external-dns
-        image: k8s.gcr.io/external-dns/external-dns:v0.15.1
+        image: registry.k8s.io/external-dns/external-dns:v0.15.1
         args:
           - --source=ingress
           - --source=service
@@ -31,6 +61,7 @@ spec:
           - --cloudflare-proxied           # Optional: enable Cloudflare proxy (orange cloud)
           - --policy=sync
           - --log-level=info
+          - --namespace=tech-app
         env:
         - name: CF_API_TOKEN
           valueFrom:
