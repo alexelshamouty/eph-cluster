@@ -60,7 +60,7 @@ jobs:
           helm repo update
           helm install nginx-ingress ingress-nginx/ingress-nginx --namespace tech-control \ 
           --set controller.service.type=LoadBalancer \
-          -- set controller.watchNamespace=tech-app
+          --set controller.watchNamespace=tech-app
       
       - name: Create CloudFlare Secret
         run: |
