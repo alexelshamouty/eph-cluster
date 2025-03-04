@@ -44,7 +44,7 @@ metadata:
   namespace: tech-app
   annotations:
     kubernetes.io/ingress.class: "nginx"
-    external-dns.alpha.kubernetes.io/hostname: android.alexelsh.nl
+    external-dns.alpha.kubernetes.io/hostname: tech-tenant-one.alexelsh.nl
     external-dns.alpha.kubernetes.io/cloudflare-proxied: "true"
 spec:
   rules:
