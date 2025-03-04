@@ -1,0 +1,16 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: red-control
+  labels:
+    tenant: red
+    purpose: control
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: red-app
+  labels:
+    tenant: red
+    purpose: application
