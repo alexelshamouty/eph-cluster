@@ -43,7 +43,7 @@ metadata:
   name: echo-server-ingress
   namespace: blue-app
   annotations:
-    kubernetes.io/ingress.class: "nginx"
+    kubernetes.io/ingress.class: "blue-nginx"
     external-dns.alpha.kubernetes.io/hostname: blue-tenant-one.alexelsh.nl
     external-dns.alpha.kubernetes.io/cloudflare-proxied: "true"
 spec:

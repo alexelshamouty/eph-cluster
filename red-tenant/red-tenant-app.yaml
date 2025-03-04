@@ -43,7 +43,7 @@ metadata:
   name: echo-server-ingress
   namespace: red-app
   annotations:
-    kubernetes.io/ingress.class: "nginx"
+    kubernetes.io/ingress.class: "red-nginx"
     external-dns.alpha.kubernetes.io/hostname: red-tenant-one.alexelsh.nl
     external-dns.alpha.kubernetes.io/cloudflare-proxied: "true"
 spec:
