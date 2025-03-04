@@ -62,7 +62,7 @@ spec:
           - --policy=sync
           - --log-level=info
           - --namespace=tech-app
-          - --text-owner-id=tech
+          - --txt-owner-id=tech
         env:
         - name: CF_API_TOKEN
           valueFrom:
