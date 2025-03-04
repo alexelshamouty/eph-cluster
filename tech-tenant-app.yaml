@@ -48,7 +48,7 @@ metadata:
     external-dns.alpha.kubernetes.io/cloudflare-proxied: "true"
 spec:
   rules:
-  - host: android.alexelsh.nl
+  - host: tech-tenant-one.alexelsh.nl
     http:
       paths:
       - path: /
