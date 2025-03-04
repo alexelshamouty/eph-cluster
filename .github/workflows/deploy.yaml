@@ -117,21 +117,21 @@ jobs:
           kubectl apply -f blue-tenant/external-dns.yaml
           kubectl apply -f blue-tenant/blue-tenant-app.yaml
       
-    # # Setup red tenant
-    #   - name: Install NGINX Controller Red
-    #     run: |
-    #       helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
-    #       helm repo update
+    # Setup red tenant
+      - name: Install NGINX Controller Red
+        run: |
+          helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+          helm repo update
 
-    #       if ! helm list -n tech-control | grep -q "ingress-nginx"; then
-    #         helm install nginx-ingress ingress-nginx/ingress-nginx \
-    #           --namespace red-control --create-namespace \
-    #           --set controller.service.type=LoadBalancer \
-    #           --set controller.watchNamespace=red-app
-    #       fi
+          if ! helm list -n tech-control | grep -q "ingress-nginx"; then
+            helm install nginx-ingress ingress-nginx/ingress-nginx \
+              --namespace red-control --create-namespace \
+              --set controller.service.type=LoadBalancer \
+              --set controller.watchNamespace=red-app
+          fi
 
-    #   - name: Deploy blue tenant
-    #     run: |
-    #       kubectl apply -f red-tenant/red-tenant.yaml
-    #       kubectl apply -f red-tenant/external-dns.yaml
-    #       kubectl apply -f red-tenant/red-tenant-app.yaml
+      - name: Deploy blue tenant
+        run: |
+          kubectl apply -f red-tenant/red-tenant.yaml
+          kubectl apply -f red-tenant/external-dns.yaml
+          kubectl apply -f red-tenant/red-tenant-app.yaml
