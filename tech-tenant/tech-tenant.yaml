@@ -1,0 +1,16 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: tech-control
+  labels:
+    tenant: tech
+    purpose: control
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: tech-app
+  labels:
+    tenant: tech
+    purpose: application
