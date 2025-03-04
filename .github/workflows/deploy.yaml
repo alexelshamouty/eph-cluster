@@ -72,7 +72,7 @@ jobs:
 
       - name: Deploy external dns
         run: 
-          kubnecl apply -f external-dns.yaml
+          kubectl apply -f external-dns.yaml
 
       - name: deploy application
         run: |
