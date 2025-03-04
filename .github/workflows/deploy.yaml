@@ -82,7 +82,8 @@ jobs:
             helm install nginx-ingress ingress-nginx/ingress-nginx \
               --namespace tech-control --create-namespace \
               --set controller.service.type=LoadBalancer \
-              --set controller.watchNamespace=tech-app
+              --set controller.watchNamespace=tech-app \
+              --set fullnameOverride=tech-ingress
           fi
 
       - name: Create CloudFlare Secret
@@ -108,7 +109,8 @@ jobs:
             helm install nginx-ingress ingress-nginx/ingress-nginx \
               --namespace blue-control --create-namespace \
               --set controller.service.type=LoadBalancer \
-              --set controller.watchNamespace=blue-app
+              --set controller.watchNamespace=blue-app \ 
+              --set fullnameOverride=blue-ingress
           fi
 
       - name: Deploy blue tenant
@@ -127,7 +129,8 @@ jobs:
             helm install nginx-ingress ingress-nginx/ingress-nginx \
               --namespace red-control --create-namespace \
               --set controller.service.type=LoadBalancer \
-              --set controller.watchNamespace=red-app
+              --set controller.watchNamespace=red-app \
+              --set fullnameOverride=red-ingress
           fi
 
       - name: Deploy blue tenant
