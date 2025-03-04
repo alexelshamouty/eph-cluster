@@ -50,7 +50,7 @@ jobs:
         run: |
           bash ./tag-nodes.sh
 
-
+############################################################################################################
   setup-tenants:
     needs: kubernetes-infra
     runs-on: ubuntu-latest
@@ -93,12 +93,13 @@ jobs:
               --from-literal=api-token=${{ secrets.CLOUD_FLARE_SECRET }} \
               --namespace tech-control
           fi
+
       - name: Deploy tech tenant
         run: |
           kubectl apply -f tech-tenant/tech-tenant.yaml
           kubectl apply -f tech-tenant/external-dns.yaml
           kubectl apply -f tech-tenant/tech-tenant-app.yaml
-
+############################################################################################################
     # Setup blue tenant
       - name: Install NGINX Controller Blue
         run: |
@@ -115,18 +116,22 @@ jobs:
               --set controller.ingressClassResource.name=blue-nginx
 
           fi
+
       - name: Create CloudFlare Secret
         run: |
           if ! kubectl get secret cloudflare-api-token -n blue-control | grep cloudflare-api-token; then
               kubectl create secret generic cloudflare-api-token \
               --from-literal=api-token=${{ secrets.CLOUD_FLARE_SECRET }} \
               --namespace blue-control
+          fi
+
       - name: Deploy blue tenant
         run: |
           kubectl apply -f blue-tenant/blue-tenant.yaml
           kubectl apply -f blue-tenant/external-dns.yaml
           kubectl apply -f blue-tenant/blue-tenant-app.yaml
-      
+
+############################################################################################################
     # Setup red tenant
       - name: Install NGINX Controller Red
         run: |
@@ -142,12 +147,14 @@ jobs:
               --set controller.ingressClass=red-nginx \
               --set controller.ingressClassResource.name=red-nginx
           fi
+
       - name: Create CloudFlare Secret
         run: |
           if ! kubectl get secret cloudflare-api-token -n red-control | grep cloudflare-api-token; then
               kubectl create secret generic cloudflare-api-token \
               --from-literal=api-token=${{ secrets.CLOUD_FLARE_SECRET }} \
               --namespace red-control
+          fi
 
       - name: Deploy blue tenant
         run: |
