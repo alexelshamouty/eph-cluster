@@ -62,6 +62,7 @@ spec:
           - --policy=sync
           - --log-level=info
           - --namespace=red-app
+          - --text-owner-id=red
         env:
         - name: CF_API_TOKEN
           valueFrom:
