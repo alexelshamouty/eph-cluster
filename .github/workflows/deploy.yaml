@@ -110,7 +110,10 @@ jobs:
               --namespace blue-control --create-namespace \
               --set controller.service.type=LoadBalancer \
               --set controller.watchNamespace=blue-app \
-              --set fullnameOverride=blue-ingress
+              --set fullnameOverride=blue-ingress \
+              --set controller.ingressClass=blue-nginx \
+              --set controller.ingressClassResource.name=blue-nginx
+
           fi
 
       - name: Deploy blue tenant
@@ -130,7 +133,9 @@ jobs:
               --namespace red-control --create-namespace \
               --set controller.service.type=LoadBalancer \
               --set controller.watchNamespace=red-app \
-              --set fullnameOverride=red-ingress
+              --set fullnameOverride=red-ingress \
+              --set controller.ingressClass=red-nginx \
+              --set controller.ingressClassResource.name=red-nginx
           fi
 
       - name: Deploy blue tenant
