@@ -1,3 +1,5 @@
+![Deploy Stack](https://github.com/alexelshamouty/eph-cluster/actions/workflows/deploy.yml/badge.svg)
+
 # This will create full 3 test applications 
 * blue-tenant-one.alexelsh.nl
 * red-tenant-one.alexelsh.nl
