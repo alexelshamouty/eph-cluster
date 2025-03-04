@@ -109,7 +109,7 @@ jobs:
             helm install nginx-ingress ingress-nginx/ingress-nginx \
               --namespace blue-control --create-namespace \
               --set controller.service.type=LoadBalancer \
-              --set controller.watchNamespace=blue-app \ 
+              --set controller.watchNamespace=blue-app \
               --set fullnameOverride=blue-ingress
           fi
 
