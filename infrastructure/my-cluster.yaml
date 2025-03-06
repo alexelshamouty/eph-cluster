@@ -18,6 +18,15 @@ Parameters:
   PublicSubnetCIDR2:
     Type: String
     Default: 10.0.2.0/24
+  PrivateSubnetCIDR1:
+    Type: String
+    Default: 10.0.3.0/24
+  PrivateSubnetCIDR2:
+    Type: String
+    Default: 10.0.4.0/24
+  PrivateSubnetCIDR3:
+    Type: String
+    Default: 10.0.5.0/24
 
 Resources:
   VPC:
@@ -29,6 +38,8 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub "${ClusterName}-VPC"
+        - Key: AccountName
+          Value: MyStuff
 
   InternetGateway:
     Type: AWS::EC2::InternetGateway
@@ -36,6 +47,8 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub "${ClusterName}-IGW"
+        - Key: AccountName
+          Value: MyStuff
 
   VPCGatewayAttachment:
     Type: AWS::EC2::VPCGatewayAttachment
@@ -53,6 +66,10 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub "${ClusterName}-PublicSubnet1"
+        - Key: kubernetes.io/role/elb
+          Value: "1"
+        - Key: AccountName
+          Value: MyStuff
 
   PublicSubnet2:
     Type: AWS::EC2::Subnet
@@ -64,6 +81,49 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub "${ClusterName}-PublicSubnet2"
+        - Key: kubernetes.io/role/elb
+          Value: "1"
+        - Key: AccountName
+          Value: MyStuff
+
+  PrivateSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !Ref PrivateSubnetCIDR1
+      MapPublicIpOnLaunch: false
+      AvailabilityZone: !Select [ 0, !GetAZs '' ]
+      Tags:
+        - Key: Name
+          Value: !Sub "${ClusterName}-PrivateSubnet1"
+        - Key: AccountName
+          Value: MyStuff
+
+  PrivateSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !Ref PrivateSubnetCIDR2
+      MapPublicIpOnLaunch: false
+      AvailabilityZone: !Select [ 1, !GetAZs '' ]
+      Tags:
+        - Key: Name
+          Value: !Sub "${ClusterName}-PrivateSubnet2"
+        - Key: AccountName
+          Value: MyStuff
+
+  PrivateSubnet3:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !Ref PrivateSubnetCIDR3
+      MapPublicIpOnLaunch: false
+      AvailabilityZone: !Select [ 2, !GetAZs '' ]
+      Tags:
+        - Key: Name
+          Value: !Sub "${ClusterName}-PrivateSubnet3"
+        - Key: AccountName
+          Value: MyStuff
 
   PublicRouteTable:
     Type: AWS::EC2::RouteTable
@@ -72,6 +132,8 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub "${ClusterName}-PublicRouteTable"
+        - Key: AccountName
+          Value: MyStuff
 
   PublicRoute:
     Type: AWS::EC2::Route
@@ -92,6 +154,57 @@ Resources:
     Properties:
       SubnetId: !Ref PublicSubnet2
       RouteTableId: !Ref PublicRouteTable
+
+  NatGatewayEIP:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+
+  NatGateway:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt NatGatewayEIP.AllocationId
+      SubnetId: !Ref PublicSubnet1
+      Tags:
+        - Key: Name
+          Value: !Sub "${ClusterName}-NatGateway"
+        - Key: AccountName
+          Value: MyStuff
+
+  PrivateRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub "${ClusterName}-PrivateRouteTable"
+        - Key: AccountName
+          Value: MyStuff
+
+  PrivateRoute:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NatGateway
+
+  PrivateSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateSubnet1
+      RouteTableId: !Ref PrivateRouteTable
+
+  PrivateSubnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateSubnet2
+      RouteTableId: !Ref PrivateRouteTable
+
+  PrivateSubnet3RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateSubnet3
+      RouteTableId: !Ref PrivateRouteTable
 
   EKSClusterRole:
     Type: AWS::IAM::Role
@@ -116,13 +229,16 @@ Resources:
         SubnetIds:
           - !Ref PublicSubnet1
           - !Ref PublicSubnet2
+          - !Ref PrivateSubnet1
+          - !Ref PrivateSubnet2
+          - !Ref PrivateSubnet3
         EndpointPublicAccess: true
+        EndpointPrivateAccess: true
         PublicAccessCidrs:
           - 0.0.0.0/0
-    DependsOn:
-      - PublicSubnet1
-      - PublicSubnet2
-      - PublicRoute
+      Tags:
+        - Key: AccountName
+          Value: MyStuff
 
   EKSNodeInstanceRole:
     Type: AWS::IAM::Role
@@ -139,6 +255,7 @@ Resources:
         - arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy
         - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly
         - arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy
+        - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
 
   EKSNodeGroup:
     Type: AWS::EKS::Nodegroup
@@ -150,12 +267,15 @@ Resources:
         MaxSize: 6
         DesiredSize: 4
       Subnets:
-        - !Ref PublicSubnet1
-        - !Ref PublicSubnet2
+        - !Ref PrivateSubnet1
+        - !Ref PrivateSubnet2
+        - !Ref PrivateSubnet3
       InstanceTypes:
         - t3.medium
       CapacityType: SPOT
       NodeRole: !GetAtt EKSNodeInstanceRole.Arn
+      Tags:
+        AccountName: MyStuff
 
 Outputs:
   ClusterName:
