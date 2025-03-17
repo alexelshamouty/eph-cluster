@@ -71,7 +71,30 @@ jobs:
       - name: install helm
         run: |
           curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+### COMMON CONTROLS
+    # Setup general nginx
+    # It will install in a namespace called common-controls
+      - name: Install NGINX Controller General
+        run: |
+          helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+          helm repo update
 
+          if ! helm list | grep -q "ingress-nginx"; then
+            helm install nginx-ingress ingress-nginx/ingress-nginx \
+              --namespace common-controls --create-namespace \
+              --set controller.service.type=LoadBalancer \
+              --set fullnameOverride=common-nginx \
+              --set controller.ingressClass=common-nginx \
+              --set controller.ingressClassResource.name=common-nginx
+          fi
+      - name: Create CloudFlare Secret
+        run: |
+          if ! kubectl get secret cloudflare-api-token -n common-controls | grep cloudflare-api-token; then
+              kubectl create secret generic cloudflare-api-token \
+              --from-literal=api-token=${{ secrets.CLOUD_FLARE_SECRET }} \
+              --namespace common-controls
+          fi
+  ############################################################################################################
     # Setup tech tenant
       - name: Install NGINX Controller Tech tenant
         run: |

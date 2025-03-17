@@ -276,7 +276,6 @@ Resources:
       NodeRole: !GetAtt EKSNodeInstanceRole.Arn
       Tags:
         AccountName: MyStuff
-
 Outputs:
   ClusterName:
     Value: !Ref ClusterName
