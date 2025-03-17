@@ -184,3 +184,31 @@ jobs:
           kubectl apply -f red-tenant/red-tenant.yaml
           kubectl apply -f red-tenant/external-dns.yaml
           kubectl apply -f red-tenant/red-tenant-app.yaml
+############################################################################################################
+    # Setup analyzer
+      - name: Install NGINX Controller Red
+        run: |
+          helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+          helm repo update
+
+          if ! helm list -n analyzer-control | grep -q "ingress-nginx"; then
+            helm install nginx-ingress ingress-nginx/ingress-nginx \
+              --namespace analyzer-control --create-namespace \
+              --set controller.service.type=LoadBalancer \
+              --set controller.watchNamespace=analyzer-app \
+              --set fullnameOverride=analyzer-ingress \
+              --set controller.ingressClass=analyzer-nginx \
+              --set controller.ingressClassResource.name=analyzer-nginx
+          fi
+
+      - name: Create CloudFlare Secret
+        run: |
+          if ! kubectl get secret cloudflare-api-token -n analyzer-control | grep cloudflare-api-token; then
+              kubectl create secret generic cloudflare-api-token \
+              --from-literal=api-token=${{ secrets.CLOUD_FLARE_SECRET }} \
+              --namespace analyzer-control
+          fi
+      - name: Deploy blue tenant
+        run: |
+          kubectl apply -f red-tenant/red-tenant.yaml
+          kubectl apply -f red-tenant/external-dns.yaml

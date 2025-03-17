@@ -1,0 +1,16 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: analyzer-control
+  labels:
+    tenant: analyzer
+    purpose: control
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: analyzer-app
+  labels:
+    tenant: analyzer
+    purpose: application
