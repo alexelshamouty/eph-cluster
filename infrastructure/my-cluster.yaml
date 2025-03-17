@@ -157,14 +157,8 @@ Resources:
       CapacityType: SPOT
       NodeRole: !GetAtt EKSNodeInstanceRole.Arn
 
-  S3Bucket:
-    Type: AWS::S3::Bucket
-    Properties:
-      BucketName: podforeksalexbucket
 Outputs:
   ClusterName:
     Value: !Ref ClusterName
   ClusterEndpoint:
     Value: !GetAtt EKSCluster.Endpoint
-  S3BucketName:
-    Value: !Ref S3Bucket
