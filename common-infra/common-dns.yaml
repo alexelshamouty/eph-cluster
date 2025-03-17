@@ -3,14 +3,14 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: common-controls
+  name: common-controls-dns
   namespace: common-controls
 ---
 #RBAC rules for the service account
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: common-controls
+  name: common-controls-cr
 rules:
 - apiGroups: [""]
   resources: ["services", "endpoints","nodes", "pods"]
@@ -27,7 +27,7 @@ metadata:
   namespace: common-controls  # This must be the namespace where ExternalDNS watches
 subjects:
 - kind: ServiceAccount
-  name: common-controls-sa
+  name: common-controls-dns
   namespace: common-controls  # ExternalDNS runs here
 roleRef:
   kind: ClusterRole
@@ -39,7 +39,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: common-controls-dns
-  namespace: common-controls-dns
+  namespace: common-controls
 spec:
   replicas: 1
   selector:
