@@ -79,7 +79,7 @@ jobs:
           helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
           helm repo update
 
-          if ! helm list | grep -q "ingress-nginx"; then
+          if ! helm list -n common-controls | grep -q "ingress-nginx"; then
             helm install nginx-ingress ingress-nginx/ingress-nginx \
               --namespace common-controls --create-namespace \
               --set controller.service.type=LoadBalancer \
