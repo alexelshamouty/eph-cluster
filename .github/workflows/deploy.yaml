@@ -24,7 +24,7 @@ jobs:
       - name: Deploy CloudFormation Stack and Wait for Completion
         uses: aws-actions/aws-cloudformation-github-deploy@v1
         with:
-          name: disposable
+          name: ephemral-cluster
           template: infrastructure/my-cluster.yaml
           no-fail-on-empty-changeset: "1"
           capabilities: CAPABILITY_IAM
