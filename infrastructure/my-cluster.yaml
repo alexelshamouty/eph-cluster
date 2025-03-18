@@ -268,42 +268,42 @@ Resources:
       ClusterName: !Ref EKSCluster
       NodegroupName: !Ref NodeGroupName
       ScalingConfig:
-        MinSize: 1
-        MaxSize: 1
-        DesiredSize: 1
+        MinSize: 2
+        MaxSize: 4
+        DesiredSize: 4
       Subnets:
         - !Ref PrivateSubnet1
         - !Ref PrivateSubnet2
         - !Ref PrivateSubnet3
       InstanceTypes:
-        - t3.medium
+        - m8g.2xlarge
       CapacityType: SPOT
       NodeRole: !GetAtt EKSNodeInstanceRole.Arn
       Tags:
         AccountName: MyStuff
         CPU: True
         GPU: False
-  EKSNodeGroupGPU:
-    Type: AWS::EKS::Nodegroup
-    Properties:
-      ClusterName: !Ref EKSCluster
-      NodegroupName: !Ref GpuNodeGroupName
-      ScalingConfig:
-        MinSize: 1
-        MaxSize: 1
-        DesiredSize: 1
-      Subnets:
-        - !Ref PrivateSubnet1
-        - !Ref PrivateSubnet2
-        - !Ref PrivateSubnet3
-      InstanceTypes:
-        - g4dn.4xlarge
-      #CapacityType: SPOT
-      NodeRole: !GetAtt EKSNodeInstanceRole.Arn
-      Tags:
-        AccountName: MyStuff
-        CPU: False
-        GPU: True
+  # EKSNodeGroupGPU:
+  #   Type: AWS::EKS::Nodegroup
+  #   Properties:
+  #     ClusterName: !Ref EKSCluster
+  #     NodegroupName: !Ref GpuNodeGroupName
+  #     ScalingConfig:
+  #       MinSize: 1
+  #       MaxSize: 1
+  #       DesiredSize: 1
+  #     Subnets:
+  #       - !Ref PrivateSubnet1
+  #       - !Ref PrivateSubnet2
+  #       - !Ref PrivateSubnet3
+  #     InstanceTypes:
+  #       - g4dn.4xlarge
+  #     #CapacityType: SPOT
+  #     NodeRole: !GetAtt EKSNodeInstanceRole.Arn
+  #     Tags:
+  #       AccountName: MyStuff
+  #       CPU: False
+  #       GPU: True
 Outputs:
   ClusterName:
     Value: !Ref ClusterName
