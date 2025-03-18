@@ -298,7 +298,7 @@ Resources:
         - !Ref PrivateSubnet3
       InstanceTypes:
         - g4dn.4xlarge
-      CapacityType: SPOT
+      #CapacityType: SPOT
       NodeRole: !GetAtt EKSNodeInstanceRole.Arn
       Tags:
         AccountName: MyStuff
