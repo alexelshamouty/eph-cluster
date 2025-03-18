@@ -9,6 +9,10 @@ Parameters:
     Type: String
     Default: ephemral-node-group
     Description: Name of the EKS Node Group.
+  GpuNodeGroupName:
+    Type: String
+    Default: ephemral-gpu-node-group
+    Description: Name of the EKS GPU Node Group.
   VpcCIDR:
     Type: String
     Default: 10.0.0.0/16
@@ -258,15 +262,15 @@ Resources:
         - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
         - arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy
 
-  EKSNodeGroup:
+  EKSNodeGroupCPU:
     Type: AWS::EKS::Nodegroup
     Properties:
       ClusterName: !Ref EKSCluster
       NodegroupName: !Ref NodeGroupName
       ScalingConfig:
         MinSize: 1
-        MaxSize: 6
-        DesiredSize: 4
+        MaxSize: 1
+        DesiredSize: 1
       Subnets:
         - !Ref PrivateSubnet1
         - !Ref PrivateSubnet2
@@ -277,6 +281,29 @@ Resources:
       NodeRole: !GetAtt EKSNodeInstanceRole.Arn
       Tags:
         AccountName: MyStuff
+        CPU: True
+        GPU: False
+  EKSNodeGroupGPU:
+    Type: AWS::EKS::Nodegroup
+    Properties:
+      ClusterName: !Ref EKSCluster
+      NodegroupName: !Ref GpuNodeGroupName
+      ScalingConfig:
+        MinSize: 1
+        MaxSize: 1
+        DesiredSize: 1
+      Subnets:
+        - !Ref PrivateSubnet1
+        - !Ref PrivateSubnet2
+        - !Ref PrivateSubnet3
+      InstanceTypes:
+        - g4dn.4xlarge
+      CapacityType: SPOT
+      NodeRole: !GetAtt EKSNodeInstanceRole.Arn
+      Tags:
+        AccountName: MyStuff
+        CPU: False
+        GPU: True
 Outputs:
   ClusterName:
     Value: !Ref ClusterName
